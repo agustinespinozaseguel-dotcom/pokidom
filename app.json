@@ -1,0 +1,58 @@
+
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+
+export default function BattleScreen({ route }) {
+  const { playerTeam } = route.params;
+
+  const [player, setPlayer] = useState(null);
+  const [cpu, setCpu] = useState(null);
+  const [result, setResult] = useState("");
+
+  useEffect(() => {
+    setPlayer(playerTeam[0]);
+    randomCpu();
+  }, []);
+
+  const randomCpu = async () => {
+    const id = Math.floor(Math.random() * 150) + 1;
+
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    const data = await res.json();
+    setCpu(data);
+  };
+
+  const fight = () => {
+    const p = player.stats[0].base_stat + player.stats[1].base_stat;
+    const c = cpu.stats[0].base_stat + cpu.stats[1].base_stat;
+
+    if (p > c) setResult("🏆 Win!");
+    else if (p < c) setResult("💀 Lose!");
+    else setResult("⚖️ Draw!");
+  };
+
+  if (!player || !cpu) return <Text>Loading...</Text>;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Battle</Text>
+
+      <Image source={{ uri: cpu.sprites.front_default }} style={styles.img} />
+      <Image source={{ uri: player.sprites.front_default }} style={styles.img} />
+
+      <TouchableOpacity style={styles.btn} onPress={fight}>
+        <Text>Fight</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.result}>{result}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#0f172a", alignItems: "center", justifyContent: "center" },
+  title: { color: "#38bdf8", fontSize: 22 },
+  img: { width: 120, height: 120 },
+  btn: { backgroundColor: "#facc15", padding: 10, marginTop: 20 },
+  result: { color: "white", fontSize: 20, marginTop: 10 },
+});
